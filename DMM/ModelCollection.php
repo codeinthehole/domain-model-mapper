@@ -1,12 +1,11 @@
 <?php
 
+namespace DMM;
 
 /**
- * A collection class to work with the MagicAccess objects
- * 
  * @package DMM
  */
-class ModelCollection extends ArrayObject
+class ModelCollection extends \ArrayObject
 {
 	/**
      * @var string
@@ -16,25 +15,54 @@ class ModelCollection extends ArrayObject
  	/**
      * @param string $modelClass
      */
-    public function __construct($modelClass='DMM\BaseDomainModel')
+    public function __construct($modelClass='\DMM\BaseDomainModel')
     {
     	if (class_exists($modelClass)) { 
     		$this->modelClassName = $modelClass;
     	} else {
-    		throw new InvalidArgumentException("'$modelClass' is not a valid class name");	
+    		throw new \InvalidArgumentException("'$modelClass' is not a valid class name");	
     	}
     }
     
     /**
-      * @param array $rows
-      * @return domain_model_Collection
-      */
+     * Overridden method to ensure that only the correct type of models are
+     * added.
+     * 
+     * @see ArrayObject::offsetSet()
+     * @return void
+     */
+    public function offsetSet($offset, $newval)
+    {
+        $this->checkType($newval);
+        parent::offsetSet($offset, $newval);
+    }
+    
+    /**
+     * @param mixed $value
+     * @throws \InvalidArgumentException
+     * @return void
+     */
+    protected function checkType($value)
+    {
+        if (!is_a($value, $this->modelClassName)) {
+            throw new \InvalidArgumentException('Provided object is not an instance of '.$this->modelClassName);
+        }
+    }
+}
+
+class old
+{
+    /**
+     * Convenience method to load a collection in one go
+     * 
+     * @param array $rows
+     * @return DMM\ModelCollection
+     */
     public function __load(array $rows)
     {
         foreach ($rows as $row) {
             $model = new $this->modelClass;
-            $model->__load($row);
-            $this[] = $model;
+            $this[] = $model->__load($row);
         }
         return $this;
     }
@@ -43,7 +71,7 @@ class ModelCollection extends ArrayObject
      * @param domain_model_MagicAccess $model
      * @return domain_model_Collection
      */
-    public function remove(domain_model_MagicAccess $model)
+    public function remove(BaseDomainModel $model)
     {
     	if (is_a($model, $this->modelClass)) {
 	        $collectionCopy = clone $this;
@@ -62,7 +90,7 @@ class ModelCollection extends ArrayObject
 	 * @param mixed $object
 	 * @return void
      */
-    public function append(domain_model_MagicAccess $object)
+    public function append(BaseDomainModel $object)
     {
         $this->checkType($object);
         return parent::append($object);
@@ -72,7 +100,7 @@ class ModelCollection extends ArrayObject
      * @param domain_model_MagicAccess $model
      * @return boolean
      */
-    public function contains(domain_model_MagicAccess $model)
+    public function contains(BaseDomainModel $model)
     {
         foreach ($this as $collectionModel) {
             if ($collectionModel == $model) {
@@ -132,7 +160,7 @@ class ModelCollection extends ArrayObject
      * @param domain_model_MagicAccess $model
      * @return void
      */
-    private function checkType(domain_model_MagicAccess $model)
+    private function checkType(BaseDomainModel $model)
     {
         if (!is_a($model, $this->modelClass)) {
             throw new RuntimeException('Provided object is not a ' . $this->modelClass);
