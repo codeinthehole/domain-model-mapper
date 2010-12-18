@@ -48,134 +48,65 @@ class ModelCollection extends \ArrayObject
             throw new \InvalidArgumentException('Provided object is not an instance of '.$this->modelClassName);
         }
     }
-}
-
-class old
-{
-    /**
-     * Convenience method to load a collection in one go
-     * 
-     * @param array $rows
-     * @return DMM\ModelCollection
+    
+	/**
+     * @param BaseDomainModel $model
+     * @return ModelCollection
      */
-    public function __load(array $rows)
+    public function removeModel(BaseDomainModel $model)
     {
-        foreach ($rows as $row) {
-            $model = new $this->modelClass;
-            $this[] = $model->__load($row);
-        }
+        $collectionCopy = clone $this;
+        foreach ($collectionCopy as $index => $copiedModel) {
+            if ($model === $copiedModel) {
+                unset($this[$index]);
+            }
+       	}   
         return $this;
     }
     
-    /**
-     * @param domain_model_MagicAccess $model
-     * @return domain_model_Collection
-     */
-    public function remove(BaseDomainModel $model)
-    {
-    	if (is_a($model, $this->modelClass)) {
-	        $collectionCopy = clone $this;
-	        foreach ($collectionCopy as $index => $copiedModel) {
-	            if ($model == $copiedModel) {
-	                unset($this[$index]);
-	            }
-	       	}   
-	        return $this;
-    	} else {
-    		throw new InvalidArgumentException("Supplied object should be a " . $this->modelClass);
-    	}
-    }
-    
-    /**
-	 * @param mixed $object
-	 * @return void
-     */
-    public function append(BaseDomainModel $object)
-    {
-        $this->checkType($object);
-        return parent::append($object);
-    }
-    
-    /**
-     * @param domain_model_MagicAccess $model
+	/**	
+ 	 * @param domain_model_MagicAccess $model
      * @return boolean
      */
     public function contains(BaseDomainModel $model)
     {
         foreach ($this as $collectionModel) {
-            if ($collectionModel == $model) {
+            if ($collectionModel === $model) {
                 return true;
             } 
         }
 		return false;
     }
-
-    /**
-     * @param string $property
-     * @param mixed $value
-     * @return domain_Model
-     */
-    public function findByProperty($property, $value)
-    {
-        foreach ($this as $model) {
-            if ($model->{$property} == $value) {
-                return $model;
-            }
-        }
-        return null;
-    }
     
-    /**
-     * A prototype-like pluck function.
+	/**
+     * A prototypejs-like pluck function.
      * 
      * @param string $property
      * @return array
      */
-    public function pluck($property)
+    public function pluckField($property)
     {
 	    $array = array();
 	    foreach ($this as $model) {
-	        if (array_key_exists($property, $model)) {
-	        	$array[] = $model[$property];
+	        if (isset($model->{$property})) {
+	        	$array[] = $model->{$property};
 	        }
 	    }
 	    return $array;
     }
     
-    /**
+	/**
      * Same as pluck only for setting properties
      * 
-     * @param string $property
+     * @param string $field
      * @param mixed $value
-     * @return void
+     * @return ModelCollection
      */
-    public function setProperty($property, $value)
+    public function setField($field, $value)
     {
 	    foreach ($this as $model) {
-	        $model->$property = $value;
+	        $model->$field = $value;
 	    }
-    }
-    
-    /**
-     * @param domain_model_MagicAccess $model
-     * @return void
-     */
-    private function checkType(BaseDomainModel $model)
-    {
-        if (!is_a($model, $this->modelClass)) {
-            throw new RuntimeException('Provided object is not a ' . $this->modelClass);
-        }
-    }
-
-    /**
-     * @param iterable $collection
-     * @return domain_model_Collection
-     */
-    public function merge($collection)
-    {
-        foreach ($collection as $model) {
-            $this->append($model);
-        }
-        return $this;
+	    return $this;
     }
 }

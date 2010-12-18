@@ -1,18 +1,50 @@
 <?php
-/**
- * @package domain
- * @subpackage mapper
- * @copyright 2009 Tangent Labs 
- * @version SVN: $Id: MagicAccess.php 1897 2010-10-27 13:04:12Z lechowiczl $
- */
+
+namespace DMM;
+
+class Mapper
+{
+    protected $pdo;
+    
+    protected $tableName;
+    
+    protected $identityFields;
+    
+    public function __construct(\PDO $pdo, $tableName, $identityFields)
+    {
+        $this->pdo = $pdo;
+        $this->tableName = $tableName;
+        if (!is_array($identityFields)) {
+            $identityFields = array($identityFields);
+        }
+        $this->identityFields = $identityFields;
+    }
+    
+    public function insert(BaseDomainModel $model)
+    {
+        // Extract fields and values from bindings
+        $fields = array();
+        $placeHolders = array();
+        $modelData = $model->__toArray();
+        foreach (array_keys($modelData) as $field) {
+            $fields[] = sprintf("`%s`", str_replace('`', '', $field));
+            $placeHolders[] = '?';
+        }
+        $sql = sprintf("INSERT INTO `%s` (%s) VALUES (%s)", 
+            $this->tableName, implode(', ', $fields), implode(', ', $placeHolders));
+        $this->pdo->prepare($sql);
+        $statement = $this->pdo->execute(array_values($modelData));    
+    }
+}
+
 
 /**
  * Data mapper for domain objects that implement magic access.
  *
- * @package domain
- * @subpackage mapper
+ * @package DMM
  */
-class domain_mapper_MagicAccess extends domain_Mapper
+class domain_mapper_MagicAccess 
+
 {
     /**
      * @var string

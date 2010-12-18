@@ -112,17 +112,7 @@ class BaseDomainModel
      */
     public function __toArray()
     {
-        $arrayData = array();
-        if ($this->fieldNames) {
-            foreach ($this->fieldNames as $field) {
-                if (array_key_exists($field, $this->data)) {
-                    $arrayData[$field] = $this->data[$field];
-                }
-            }
-        } else {
-            $arrayData = $this->data;
-        }
-        return $arrayData;
+        return $this->data;
     }
     
     /**

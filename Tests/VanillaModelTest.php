@@ -43,6 +43,11 @@ class VanillaModelTest extends \PHPUnit_Framework_TestCase
         $this->assertFalse(isset($this->model->Name));
     }
     
+    public function testUnknownFieldsReturnNull()
+    {
+        $this->assertNull($this->model->UnknownField);
+    }
+    
     public function testMagicToArrayReturnsAllData()
     {
         $this->assertSame($this->modelData, $this->model->__toArray());
@@ -51,5 +56,11 @@ class VanillaModelTest extends \PHPUnit_Framework_TestCase
     public function testNoValidationErrorsAreReturned()
     {
         $this->assertSame(array(), $this->model->getValidationErrors());
+    }
+    
+    public function testFieldsCanBeSet()
+    {
+        $this->model->salary = 150000;
+        $this->assertSame(150000, $this->model->salary);
     }
 }
