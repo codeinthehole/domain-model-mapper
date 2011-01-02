@@ -2,9 +2,11 @@
 
 namespace DMM;
 
+require_once __DIR__.'/DbAdapter.php';
+
 class Mapper
 {
-    protected $pdo;
+    protected $db;
     
     protected $tableName;
     
@@ -12,7 +14,7 @@ class Mapper
     
     public function __construct(\PDO $pdo, $tableName, $identityFields)
     {
-        $this->pdo = $pdo;
+        $this->db = new DbAdapter($pdo);
         $this->tableName = $tableName;
         if (!is_array($identityFields)) {
             $identityFields = array($identityFields);
@@ -22,18 +24,12 @@ class Mapper
     
     public function insert(BaseDomainModel $model)
     {
-        // Extract fields and values from bindings
-        $fields = array();
-        $placeHolders = array();
-        $modelData = $model->__toArray();
-        foreach (array_keys($modelData) as $field) {
-            $fields[] = sprintf("`%s`", str_replace('`', '', $field));
-            $placeHolders[] = '?';
+        $this->db->insert($this->tableName, $model->__toArray());
+        $id = $this->db->getLastInsertId();
+        if ($id) {
+            $model->__setIdentity($id);    
         }
-        $sql = sprintf("INSERT INTO `%s` (%s) VALUES (%s)", 
-            $this->tableName, implode(', ', $fields), implode(', ', $placeHolders));
-        $this->pdo->prepare($sql);
-        $statement = $this->pdo->execute(array_values($modelData));    
+        return $this;
     }
 }
 
@@ -44,7 +40,6 @@ class Mapper
  * @package DMM
  */
 class domain_mapper_MagicAccess 
-
 {
     /**
      * @var string
