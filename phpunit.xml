@@ -1,10 +1,10 @@
-<phpunit backupGlobals="false"
+<phpunit backupGlobals="true"
          backupStaticAttributes="true"
          colors="true"
          convertErrorsToExceptions="true"
          convertNoticesToExceptions="true"
          convertWarningsToExceptions="true"
-         processIsolation="true"
+         processIsolation="false"
          stopOnFailure="true"
          syntaxCheck="false"
          verbose="true"
@@ -15,8 +15,7 @@
         </testsuite>
     </testsuites>
     <logging>
-        <log type="coverage-html" target="/tmp/" charset="UTF-8"
-             yui="true" highlight="true" lowUpperBound="35" highLowerBound="70"/>
+        <log type="coverage-html" target="/tmp/" charset="UTF-8" yui="true" highlight="true" lowUpperBound="35" highLowerBound="70"/>
     </logging>
     <filter>
         <blacklist>

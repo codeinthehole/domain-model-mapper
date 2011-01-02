@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<dataset>
+    <post
+        post_id="1"
+        title="My First Post"
+        date_created="2008-12-01 12:30:29"
+        contents="This is my first post" 
+        rating="5"
+        />
+    <post
+        post_id="2"
+        title="My Second Post"
+        date_created="2008-12-04 15:35:25"
+        contents="This is my second post"
+        />
+    <post
+        post_id="3"
+        title="My Third Post"
+        date_created="2008-12-09 03:17:05"
+        contents="This is my third post"
+        rating="3"
+        />
+</dataset>
