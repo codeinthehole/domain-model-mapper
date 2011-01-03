@@ -5,6 +5,8 @@ namespace DMM;
 require_once __DIR__.'/MissingDataException.php';
 
 /**
+ * The top-level domain model object.
+ * 
  * @package DMM
  */
 class BaseDomainModel
@@ -51,7 +53,6 @@ class BaseDomainModel
         $this->fieldNames = $fieldNames;
         return $this;
     }
-    
     
     /**
      * Create a clean domain object from a database result set.

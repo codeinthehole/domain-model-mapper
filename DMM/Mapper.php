@@ -4,12 +4,25 @@ namespace DMM;
 
 require_once __DIR__.'/DbAdapter.php';
 
+/**
+ * @package DMM
+ *
+ */
 class Mapper
 {
+    /**
+     * @var DbAdapter
+     */
     protected $db;
     
+    /**
+     * @var string
+     */
     protected $tableName;
     
+    /**
+     * @var array
+     */
     protected $identityFields;
     
     /**
@@ -26,6 +39,11 @@ class Mapper
      */
     protected $modelCollectionClass = '\DMM\ModelCollection';
 
+    /**
+     * @param PDO $pdo
+     * @param string $tableName
+     * @param array $identityFields
+     */
     public function __construct(\PDO $pdo, $tableName, $identityFields)
     {
         $this->db = new DbAdapter($pdo);
@@ -58,6 +76,10 @@ class Mapper
       * 
       * This is extracted into its own method so that it is 
       * easy to subclass and introduce caching.
+      * 
+      * @param string $sql
+      * @param array $bindings
+      * @return BaseDomainModel
       */
     protected function fetchItem($sql, $bindings)
     {
@@ -70,6 +92,10 @@ class Mapper
       * 
       * This is extracted into its own method so that it is 
       * easy to subclass and introduce caching.
+      * 
+      * @param string $sql
+      * @param array $bindings
+      * @return ModelCollection
       */
     protected function fetchCollection($sql, $bindings)
     {
@@ -79,7 +105,7 @@ class Mapper
 
     /**
      * @param array $row
-     * @return DMM\BaseDomainModel
+     * @return BaseDomainModel
      */
     protected function loadItem($row=null)
     {
@@ -110,8 +136,8 @@ class Mapper
      * Returns a domain model that matches a given identity
      * 
      * @param array $identity A hash of fieldname => value to use to identify the model
-     * @param \DMM\BaseDomainModel
-     * @return \DMM\BaseDomainModel
+     * @param BaseDomainModel
+     * @return BaseDomainModel
      */
     public function find($identity, BaseDomainModel $model)
     {
@@ -123,6 +149,10 @@ class Mapper
         return $row ? $model->__load($row) : null;
     }
     
+    /**
+     * @param BaseDomainModel $model
+     * @return Mapper
+     */
     public function insert(BaseDomainModel $model)
     {
         $this->db->insert($this->tableName, $model->__toArray());
@@ -133,7 +163,7 @@ class Mapper
 
     /**
      * @param BaseDomainModel $model
-     * @return void
+     * @return Mapper
      */
     public function update(BaseDomainModel $model)
     {
@@ -144,8 +174,8 @@ class Mapper
     }
 
     /**
-     * @param domain_model_MagicAccess $model
-     * @return domain_mapper_MagicAccess
+     * @param BaseDomainModel $model
+     * @return Mapper
      */
     public function save(BaseDomainModel $model)
     {
@@ -163,13 +193,14 @@ class Mapper
     /**
      * Deletes a model from the db
      * 
-     * @param domain_model_MagicAccess $model
-     * @return void
+     * @param BaseDomainModel $model
+     * @return Mapper
      */
     public function delete(BaseDomainModel $model)
     {
         $identity = $model->__identity();
-        return $this->db->delete($this->tableName, $this->getIdentityCondition($identity));
+        $this->db->delete($this->tableName, $this->getIdentityCondition($identity));
+        return $this;
     }
     
     /**

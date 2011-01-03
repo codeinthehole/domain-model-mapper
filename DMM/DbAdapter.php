@@ -1,10 +1,11 @@
 <?php
+
 namespace DMM;
 
 /**
- * Database adapter object
+ * A simple database adapter, wrapping a PDO object
  *
- * @package db
+ * @package DMM
  */
 class DbAdapter
 {
@@ -48,13 +49,13 @@ class DbAdapter
             $this->lastPdoStatement = $this->pdo->prepare($sql);
             $executedOk = $this->lastPdoStatement->execute($bindings);
             if (false === $executedOk) {
-                throw new RuntimeException;
+                throw new PDOException;
             }
         } else {
             // Execute a normal query
             $this->lastPdoStatement = $this->pdo->query($sql); 
             if (false === $this->lastPdoStatement) {
-                throw new RuntimeException;
+                throw new PDOException;
             }
         }
         return $this->lastPdoStatement;
