@@ -22,12 +22,85 @@ class Mapper
         $this->identityFields = $identityFields;
     }
     
+    /**
+     * Returns the SQL condition to identity this model
+     * 
+     * @param array $identity A hash of field => value for the identity of this object
+     * @return string
+     */
+    private function getIdentityCondition(array $identity)
+    {
+        $conditions = array();
+        foreach ($identity as $key => $value) {
+            if (in_array($key, $this->identityFields)) {
+                $conditions[] = sprintf("`%s` = '%s'", $key, $value);
+            }
+        }
+        return implode(' AND ', $conditions);
+    }
+
+    /**
+     * @param array $row
+     * @return DMM\BaseDomainModel
+     */
+    protected function loadItem($row=null)
+    {
+        if (!$row) return null;
+        $item = new $this->modelClass;
+        $item->__load($row);
+        return $item;
+    }
+
+    /**
+     * Returns a domain model that matches a given identity
+     * 
+     * @param array $identity A hash of fieldname => value to use to identify the model
+     * @param \DMM\BaseDomainModel
+     * @return \DMM\BaseDomainModel
+     */
+    public function find($identity, BaseDomainModel $model)
+    {
+        $sql = "SELECT * FROM `%s` WHERE %s";
+        $findSql = sprintf($sql, 
+            $this->tableName, 
+            $this->getIdentityCondition($identity));
+        $row = $this->db->fetchRow($findSql);
+        return $row ? $model->__load($row) : null;
+    }
+    
     public function insert(BaseDomainModel $model)
     {
         $this->db->insert($this->tableName, $model->__toArray());
         $id = $this->db->getLastInsertId();
-        if ($id) {
-            $model->__setIdentity($id);    
+        if ($id) $model->__setIdentity($id);    
+        return $this;
+    }
+
+    /**
+     * @param BaseDomainModel $model
+     * @return void
+     */
+    public function update(BaseDomainModel $model)
+    {
+        $this->db->update($this->tableName, 
+            $model->__toArray(), 
+            $this->getIdentityCondition($model->__identity()));
+        return $this;
+    }
+
+    /**
+     * @param domain_model_MagicAccess $model
+     * @return domain_mapper_MagicAccess
+     */
+    public function save(BaseDomainModel $model)
+    {
+        // We check to see if we can load this model to
+        // determine if we insert or update
+        $existingModel = $this->find($model->__identity(), clone $model);
+        if ($existingModel) {
+            $this->update($model);
+        } else {
+            $this->insert($model);
         }
         return $this;
     }
@@ -81,18 +154,6 @@ class domain_mapper_MagicAccess
     }
     
     /**
-     * @param array $row
-     * @return domain_model_MagicAccess
-     */
-    protected function loadItem($row=null)
-    {
-        if (!$row) return null;
-        $item = new $this->modelClass;
-        $item->__load($row);
-        return $item;
-    }
-    
-    /**
      * @param array $rows
      * @return domain_model_Collection
      */
@@ -110,23 +171,6 @@ class domain_mapper_MagicAccess
     }
     
     /**
-     * Returns a domain model that matches a given identity
-     * 
-     * @param array $identity A hash of fieldname => value to use to identify the model
-     * @param domain_model_MagicAccess $model The model to populate with the retrieved data
-     * @return domain_model_MagicAccess
-     */
-    public function find($identity, domain_model_MagicAccess $model)
-    {
-        $sql = "SELECT * FROM `%s` WHERE %s";
-        $findSql = sprintf($sql, 
-            $this->tableName, 
-            $this->getIdentityCondition($identity));
-        $row = $this->db->fetchRow($findSql);
-        return $model->__load($row);
-    }
-    
-    /**
      * Inserts a new model into the db
      *  
      * @param domain_model_MagicAccess $model
@@ -141,31 +185,7 @@ class domain_mapper_MagicAccess
         }
     }
     
-    /**
-     * Updates the db row for a model
-     *  
-     * @param domain_model_MagicAccess $model
-     * @return void
-     */
-    public function update(domain_model_MagicAccess $model)
-    {
-        $identity = $model->__identity();
-        return $this->db->update($this->tableName, $model->__toArray(), $this->getIdentityCondition($identity));
-    }
     
-    /**
-     * @param domain_model_MagicAccess $model
-     * @return domain_mapper_MagicAccess
-     */
-    public function save(domain_model_MagicAccess $model)
-    {
-    	if ($model->__identity()) {
-            $this->update($model);
-        } else {
-            $this->insert($model);
-        }
-        return $this;
-    }
     
     /**
      * Deletes a model from the db
@@ -178,24 +198,6 @@ class domain_mapper_MagicAccess
         $identity = $model->__identity();
         return $this->db->delete($this->tableName, $this->getIdentityCondition($identity));
     }
-    
-    /**
-     * Returns the SQL condition to identity this model
-     * 
-     * @param array $identity A hash of field => value for the identity of this object
-     * @return string
-     */
-    private function getIdentityCondition(array $identity)
-    {
-        $conditions = array();
-        foreach ($identity as $key => $value) {
-            if (in_array($key, $this->primaryKey)) {
-                $conditions[] = sprintf("%s = '%s'", $key, $value);
-            }
-        }
-        return implode(' AND ', $conditions);
-    }
-
     /**
      * Method designed to be subclassed with validation rules
      * 

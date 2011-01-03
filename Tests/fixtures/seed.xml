@@ -20,4 +20,11 @@
         contents="This is my third post"
         rating="3"
         />
+    <post
+        post_id="4"
+        title="My Fourth Post"
+        date_created="2008-12-19 03:17:05"
+        contents="This is my fourth post"
+        rating="2"
+        />
 </dataset>

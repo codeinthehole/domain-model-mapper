@@ -1,5 +1,5 @@
-<phpunit backupGlobals="true"
-         backupStaticAttributes="true"
+<phpunit backupGlobals="false"
+         backupStaticAttributes="false"
          colors="true"
          convertErrorsToExceptions="true"
          convertNoticesToExceptions="true"

@@ -98,7 +98,7 @@ class DbAdapter
     public function fetchRow($sql, $bindings=array())
     {
         $statement = $this->runQuery($sql, $bindings);
-        $row = $statement->fetch(PDO::FETCH_ASSOC);
+        $row = $statement->fetch(\PDO::FETCH_ASSOC);
         return $row ? $row : null;
     }
 
@@ -129,7 +129,7 @@ class DbAdapter
     public function fetchAll($sql, $bindings=array())
     {
         $statement = $this->runQuery($sql, $bindings);
-        return $statement->fetchAll(PDO::FETCH_ASSOC);
+        return $statement->fetchAll(\PDO::FETCH_ASSOC);
     }
 
     // =======
