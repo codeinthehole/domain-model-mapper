@@ -12,6 +12,20 @@ class Mapper
     
     protected $identityFields;
     
+    /**
+     * Name of model class that this is the mapper for.
+     * 
+     * @var string
+     */
+    protected $modelClass = '\DMM\BaseDomainModel';
+    
+    /**
+     * Name of collection class that this is the mapper for.
+     * 
+     * @var string
+     */
+    protected $modelCollectionClass = '\DMM\ModelCollection';
+
     public function __construct(\PDO $pdo, $tableName, $identityFields)
     {
         $this->db = new DbAdapter($pdo);
@@ -38,6 +52,30 @@ class Mapper
         }
         return implode(' AND ', $conditions);
     }
+    
+    /**
+      * For hitting the db to fetch the row data.
+      * 
+      * This is extracted into its own method so that it is 
+      * easy to subclass and introduce caching.
+      */
+    protected function fetchItem($sql, $bindings)
+    {
+        $row = $this->db->fetchRow($sql, $bindings);
+        return $this->loadItem($row);
+    }
+
+    /**
+      * For hitting the db to fetch the row data.
+      * 
+      * This is extracted into its own method so that it is 
+      * easy to subclass and introduce caching.
+      */
+    protected function fetchCollection($sql, $bindings)
+    {
+        $rows = $this->db->fetchAll($sql, $bindings);
+        return $this->loadCollection($rows);
+    }
 
     /**
      * @param array $row
@@ -49,6 +87,23 @@ class Mapper
         $item = new $this->modelClass;
         $item->__load($row);
         return $item;
+    }
+
+    /**
+     * @param array $rows
+     * @return BaseDomainModel
+     */
+    protected function loadCollection(array $rows)
+    {
+        $collection = new $this->modelCollectionClass($this->modelClass);
+        foreach ($rows as $row) {
+            // Note we check to see if the model was successfully loaded before
+            // adding.  This allows mappers to subclass the loadItem method and do
+            // return null to prevent the model being loaded.
+            $item = $this->loadItem($row);
+            if ($item) $collection[] = $item;
+        }
+        return $collection;
     }
 
     /**
@@ -104,113 +159,31 @@ class Mapper
         }
         return $this;
     }
-}
 
-
-/**
- * Data mapper for domain objects that implement magic access.
- *
- * @package DMM
- */
-class domain_mapper_MagicAccess 
-{
-    /**
-     * @var string
-     */
-    protected $tableName;
-    
-    /**
-     * @var array
-     */
-    protected $primaryKey;
-    
-    /**
-     * Name of model class that this is the mapper for.
-     * 
-     * @var string
-     */
-    protected $modelClass = 'domain_model_MagicAccess';
-    
-    /**
-     * Name of collection class that this is the mapper for.
-     * 
-     * @var domain_model_Collection
-     */
-    protected $modelCollectionClass = 'domain_model_Collection';
-    
-    /**
-     * @param db_Access $db
-     * @param string $tableName
-     * @param string|array $primaryKey
-     */
-    public function __construct(db_Access $db, $tableName, $primaryKey)
-    {
-        parent::__construct($db);
-        $this->tableName = $tableName;
-        if (!is_array($primaryKey)) {
-            $primaryKey = array($primaryKey);
-        }
-        $this->primaryKey = $primaryKey;
-    }
-    
-    /**
-     * @param array $rows
-     * @return domain_model_Collection
-     */
-    protected function loadCollection(array $rows)
-    {
-        $collection = new $this->modelCollectionClass($this->modelClass);
-        foreach ($rows as $row) {
-            // Note we check to see if the model was successfully loaded before
-            // adding.  This allows mappers to subclass the loadItem method and do
-            // clever things (good for subsites).
-            $item = $this->loadItem($row);
-            if ($item) $collection[] = $item;
-        }
-        return $collection;
-    }
-    
-    /**
-     * Inserts a new model into the db
-     *  
-     * @param domain_model_MagicAccess $model
-     * @return void
-     */
-    public function insert(domain_model_MagicAccess $model)
-    {
-        $this->db->insert($this->tableName, $model->__toArray());
-        $id = $this->db->getLastInsertId();
-        if ($id) {
-            $model->__setIdentity($id);    
-        }
-    }
-    
-    
-    
     /**
      * Deletes a model from the db
      * 
      * @param domain_model_MagicAccess $model
      * @return void
      */
-    public function delete(domain_model_MagicAccess $model)
+    public function delete(BaseDomainModel $model)
     {
         $identity = $model->__identity();
         return $this->db->delete($this->tableName, $this->getIdentityCondition($identity));
     }
+    
     /**
      * Method designed to be subclassed with validation rules
      * 
      * The returned array should be a hash of field name to error message
      * 
-     * @param domain_model_MagicAccess $model
+     * @param BaseDomainModel $model
      * @return array
      */
-    public function getValidationErrors($model)
+    public function getValidationErrors(BaseDomainModel $model)
     {
         // We default to calling the corresponding method on the model
         // object.
         return $model->getValidationErrors();
     }
-    
 }

@@ -6,7 +6,7 @@ require_once __DIR__.'/FixtureBasedTestCase.php';
 require_once __DIR__.'/../DMM/Mapper.php';
 require_once __DIR__.'/fixtures/Post.php';
 
-class FixtureBasedMapperTest extends FixtureBasedTestCase
+class VanillaMapperTest extends FixtureBasedTestCase
 {
     protected $mapper;
 
@@ -75,5 +75,22 @@ class FixtureBasedMapperTest extends FixtureBasedTestCase
 
         $freshModel = $this->mapper->find(array('post_id' => 10), new \Post);
         $this->assertSame("A new post", $freshModel->title);
+    }
+
+    public function testModelsCanBeDeleted()
+    {
+        $model = $this->mapper->find(array('post_id' => 1), new \Post); 
+        $this->mapper->delete($model);
+
+        $freshModel = $this->mapper->find(array('post_id' => 1), new \Post);
+        $this->assertNull($freshModel);
+    }
+
+    public function testGetValidationErrorsCallsModel()
+    {
+        $model = $this->getMock('\Post', array('getValidationErrors'));
+        $model->expects($this->once())
+              ->method('getValidationErrors');
+        $this->mapper->getValidationErrors($model);
     }
 }

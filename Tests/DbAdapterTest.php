@@ -19,7 +19,20 @@ class DbAdapterTest extends FixtureBasedTestCase
             "SELECT post_id
              FROM post";
         $expected = array('1','2','3','4');
-        $actual = $this->db->fetchColumn($sql);
         $this->assertSame($expected, $this->db->fetchColumn($sql));
+    }
+
+    public function testFetchRow()
+    {
+        $sql =
+            "SELECT title, rating
+             FROM post
+             WHERE post_id = :id";
+        $bindings = array('id' => 3);
+        $expected = array(
+            'title' => 'My Third Post',
+            'rating' => '3'
+        );
+        $this->assertSame($expected, $this->db->fetchRow($sql, $bindings));
     }
 }

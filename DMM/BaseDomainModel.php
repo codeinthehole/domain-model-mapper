@@ -52,17 +52,6 @@ class BaseDomainModel
         return $this;
     }
     
-    /**
-     * @return string | array
-     */
-    public function getIdentityValue()
-    {
-        if (count($this->identityKeys) == 1) {
-            return $this->data[$this->identityKeys[0]];
-        } else {
-            return $this->__identity();
-        }
-    }
     
     /**
      * Create a clean domain object from a database result set.
