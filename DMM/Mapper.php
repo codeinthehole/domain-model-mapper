@@ -63,12 +63,16 @@ class Mapper
     private function getIdentityCondition(array $identity)
     {
         $conditions = array();
+        $bindings = array();
         foreach ($identity as $key => $value) {
             if (in_array($key, $this->identityFields)) {
-                $conditions[] = sprintf("`%s` = '%s'", $key, $value);
+                $placeholder = strtolower($key);
+                $conditions[] = sprintf("`%s` = :$placeholder", $key);
+                $bindings[$placeholder] = $value;
             }
         }
-        return implode(' AND ', $conditions);
+        $sql = implode(' AND ', $conditions);
+        return array($sql, $bindings);
     }
     
     /**
@@ -142,10 +146,11 @@ class Mapper
     public function find($identity, BaseDomainModel $model)
     {
         $sql = "SELECT * FROM `%s` WHERE %s";
+        list($whereCondition, $bindings) = $this->getIdentityCondition($identity);
         $findSql = sprintf($sql, 
             $this->tableName, 
-            $this->getIdentityCondition($identity));
-        $row = $this->db->fetchRow($findSql);
+            $whereCondition); 
+        $row = $this->db->fetchRow($findSql, $bindings);
         return $row ? $model->__load($row) : null;
     }
     
@@ -167,9 +172,8 @@ class Mapper
      */
     public function update(BaseDomainModel $model)
     {
-        $this->db->update($this->tableName, 
-            $model->__toArray(), 
-            $this->getIdentityCondition($model->__identity()));
+        list($whereCondition, $bindings) = $this->getIdentityCondition($model->__identity());
+        $this->db->update($this->tableName, $model->__toArray(), $whereCondition, $bindings);
         return $this;
     }
 
@@ -198,8 +202,8 @@ class Mapper
      */
     public function delete(BaseDomainModel $model)
     {
-        $identity = $model->__identity();
-        $this->db->delete($this->tableName, $this->getIdentityCondition($identity));
+        list($whereCondition, $bindings) = $this->getIdentityCondition($model->__identity());
+        $this->db->delete($this->tableName, $whereCondition, $bindings);
         return $this;
     }
     

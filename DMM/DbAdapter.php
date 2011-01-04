@@ -173,24 +173,29 @@ class DbAdapter
      * Executes an UPDATE statement
      *
      * @param string $tableName
-     * @param array $bindings
+     * @param array $updateBindings
      * @param string $whereCondition
+     * @param array $whereBindings
      * @return int The number of rows affected
      */
-    public function update($tableName, $bindings, $whereCondition='')
+    public function update($tableName, $updateBindings, $whereCondition='', $whereBindings=array())
     {
         // Determine field assignments
         $assignments = array();
-        foreach ($bindings as $field => $value) {
-            $assignments[] = sprintf("%s = %s", $this->quoteIdentifier($field), '?');
+        $bindings = array();
+        foreach ($updateBindings as $field => $value) {
+            $placeHolder = strtolower($field);
+            $assignments[] = sprintf("%s = %s", $this->quoteIdentifier($field), ":$placeHolder");
+            $bindings[$placeHolder] = $value;
         }
         // Construct SQL
         $escapedTableName = $this->quoteIdentifier($tableName);
         $sql = sprintf("UPDATE %s SET %s", $escapedTableName, implode(', ', $assignments));
         if ($whereCondition) {
             $sql .= " WHERE $whereCondition";
+            $bindings = array_merge($bindings, $whereBindings);
         }
-        $statement = $this->runQuery($sql, array_values($bindings));
+        $statement = $this->runQuery($sql, $bindings);
         
         // Return the number of rows affected
         return $statement->rowCount();
@@ -203,11 +208,15 @@ class DbAdapter
      * @param string $whereCondition
      * @return int The number of rows deleted
      */
-    public function delete($tableName, $whereCondition)
+    public function delete($tableName, $whereCondition=null, $whereBindings=array())
     {
-        $escapedTableName = $this->quoteIdentifier($tableName);
-        $sql = sprintf("DELETE FROM %s WHERE %s", $escapedTableName, $whereCondition);
-        $statement = $this->runQuery($sql);
+        $sql = sprintf("DELETE FROM %s ", $this->quoteIdentifier($tableName));
+        $bindings = array(); 
+        if ($whereCondition) {
+            $sql .= "WHERE $whereCondition";
+            $bindings = $whereBindings;
+        }
+        $statement = $this->runQuery($sql, $bindings);
         
         // Return the number of rows affected
         return $statement->rowCount();
