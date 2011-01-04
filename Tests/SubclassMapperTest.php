@@ -6,6 +6,7 @@ require_once __DIR__.'/FixtureBasedTestCase.php';
 require_once __DIR__.'/../DMM/Mapper.php';
 require_once __DIR__.'/../DMM/ModelCollection.php';
 require_once __DIR__.'/fixtures/Post.php';
+require_once __DIR__.'/fixtures/PostCollection.php';
 
 class PostMapper extends Mapper
 {
@@ -41,6 +42,11 @@ class PostMapper extends Mapper
     }
 }
 
+class AnotherPostMapper extends PostMapper
+{
+    protected $modelCollectionClass = '\PostCollection';
+}
+
 class SubclassMapperTest extends FixtureBasedTestCase
 {
     protected $mapper;
@@ -61,5 +67,12 @@ class SubclassMapperTest extends FixtureBasedTestCase
     {
         $models = $this->mapper->findByRating(3);
         $this->assertInstanceOf('\DMM\ModelCollection', $models);
+    }
+    
+    public function testCollectionFindersReturnSpecifiedCollectionObject()
+    {
+        $mapper = new AnotherPostMapper($this->pdo);
+        $models = $mapper->findByRating(3);
+        $this->assertInstanceOf('\PostCollection', $models);
     }
 }
