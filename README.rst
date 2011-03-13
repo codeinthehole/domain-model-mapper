@@ -1,8 +1,8 @@
 DOMAIN-MODEL-MAPPER
 ===================
 
-Domain-model-mapper is a light-weight PHP 5.3 ORM based on the ``Data Mapper persistence pattern
-<http://martinfowler.com/eaaCatalog/dataMapper.html>``_.
+Domain-model-mapper is a light-weight PHP 5.3 ORM based on the `Data Mapper persistence pattern
+<http://martinfowler.com/eaaCatalog/dataMapper.html>`_.
 
 *   The key idea is that your domain models know nothing about how they are
     persisted, which allows them to contain only domain-specific methods.  This
