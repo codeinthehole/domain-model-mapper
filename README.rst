@@ -1,44 +1,44 @@
 DOMAIN-MODEL-MAPPER
 ===================
 
-Domain-model-mapper is a light-weight PHP 5.3 ORM based on the `Data Mapper persistence pattern
-<http://martinfowler.com/eaaCatalog/dataMapper.html>`.
+Domain-model-mapper is a light-weight PHP 5.3 ORM based on the ``Data Mapper persistence pattern
+<http://martinfowler.com/eaaCatalog/dataMapper.html>``_.
 
 *   The key idea is that your domain models know nothing about how they are
     persisted, which allows them to contain only domain-specific methods.  This
     keeps your models simple, readable and easy to test.
 
 *   Each type of domain model uses a mapper object for all persistence
-    operations such as `save` and `delete`.  Mapper objects can be subclassed to provide custom
+    operations such as ``save`` and ``delete``.  Mapper objects can be subclassed to provide custom
     "finder" methods, suitable for your domain (e.g., if you domain is a bookshop, then you might
-    implement `findByISBN` or `findByPublisher` on you book mapper).  
+    implement ``findByISBN`` or ``findByPublisher`` on you book mapper).  
 
 *   A simple collection object is provided that implements helper methods for extracting
     data from collections of models.  This too can be subclassed so useful collection methods
-    can be added.  Using the bookshop example again, you might implement a `getTotalPrice` method
+    can be added.  Using the bookshop example again, you might implement a ``getTotalPrice`` method
     on your book collection class.
 
 Classes
 -------
 The package comprises 3 core classes:
 
-* `BaseDomainModel` - A representation of a table row from your database.
+* ``BaseDomainModel`` - A representation of a table row from your database.
   This object deliberately knows nothing about how it is persisted (that is the
   job of the mapper).  The most basic domain model simply knows how its
   identity is defined (which can use multiple fields).  Row data can be loaded into
-  a model using the `__load()` method and each field can be accessed as pseudo-public
+  a model using the ``__load()`` method and each field can be accessed as pseudo-public
   properties.
 
-* `Mapper` - For persisting models to a RDBMS.  A mapper knows which table to write to as well as the database
+* ``Mapper`` - For persisting models to a RDBMS.  A mapper knows which table to write to as well as the database
   fields which are unique.  Various helper methods are provided to aid with writing "finder" methods.  The
   model and collection classes that a mapper returns can be easily configured.
 
-* `ModelCollection` - A subclass of `ArrayObject` which provides a range of convenience methods to make
+* ``ModelCollection`` - A subclass of ``ArrayObject`` which provides a range of convenience methods to make
   working with collections easier.
 
 Example usage
 -------------
-Normal usage is to subclass the `BaseDomainModel` class, implement a contructor that sets the model's 
+Normal usage is to subclass the ``BaseDomainModel`` class, implement a contructor that sets the model's 
 identity and to add any domain-specific methods::
 
     class Person extends \DMM\BaseDomainModel
@@ -89,7 +89,7 @@ model classes need to be specified::
         {
             $sql =
                 "SELECT * 
-                FROM `{$this->tableName}`
+                FROM ``{$this->tableName}``
                 WHERE age = :age";
             $bindings = array(
                 'age' => $age
@@ -142,11 +142,11 @@ Simply add the package to your include path.
 Testing
 -------
 
-You will need to set up a local MySQL database with name `dmm_tests` which can be
-accessed by a user `dmm-user` using password `dmm-pw`.  With this set up, run the 
+You will need to set up a local MySQL database with name ``dmm_tests`` which can be
+accessed by a user ``dmm-user`` using password ``dmm-pw``.  With this set up, run the 
 test suite using::
 
     > phpunit Tests
 
-Note that the configuration for running the tests is defined in the `phpunit.xml` file.
+Note that the configuration for running the tests is defined in the ``phpunit.xml`` file.
 
